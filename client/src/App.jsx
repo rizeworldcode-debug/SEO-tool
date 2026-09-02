@@ -235,14 +235,6 @@ function DashboardContent({ onNavigate }) {
             </React.Fragment>
           ))}
         </nav>
-
-        <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Sparkles size={14} color="var(--accent-cyan)" />
-            <span>MongoDB Atlas Connected</span>
-          </div>
-          <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.15rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>LIVE</span>
-        </div>
       </aside>
 
       {/* Main Content Area */}
