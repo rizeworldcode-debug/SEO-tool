@@ -53,17 +53,18 @@ export default function AdminLogin({ onNavigate }) {
         {/* Header Branding */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{
-            width: '56px',
-            height: '56px',
+            width: '64px',
+            height: '64px',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            background: '#ffffff',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: '1rem',
-            boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.4)'
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+            padding: '6px'
           }}>
-            <ShieldCheck size={30} color="#ffffff" />
+            <img src="/logo.png" alt="RizeWorld Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           <h2 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 0.4rem 0', letterSpacing: '-0.02em' }}>

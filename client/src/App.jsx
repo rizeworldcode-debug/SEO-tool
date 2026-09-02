@@ -195,7 +195,7 @@ function DashboardContent({ onNavigate }) {
       <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-logo">
-            <Globe size={22} />
+            <img src="/logo.png" alt="RizeWorld Logo" />
           </div>
           <div className="sidebar-brand">
             <h2>RizeWorld SEO</h2>
