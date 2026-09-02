@@ -95,7 +95,7 @@ export default function GraphicalReports({ backlinks = [] }) {
       </div>
 
       {/* Main Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1.5rem' }}>
         
         {/* Chart 1: Donut Health Distribution Chart */}
         <div style={{

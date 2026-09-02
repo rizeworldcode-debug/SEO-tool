@@ -241,58 +241,36 @@ function DashboardContent({ onNavigate }) {
       <div className="main-wrapper">
         {/* Top Header */}
         <header className="top-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <button className="mobile-nav-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
+          <div className="header-left-group">
+            <button className="mobile-nav-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle Navigation">
               <Menu size={22} />
             </button>
 
             <div className="page-title-group">
               <h1>
                 <IconComponent size={24} color="var(--accent-cyan)" />
-                {currentPage.label}
+                <span>{currentPage.label}</span>
               </h1>
-              <p>{currentPage.subtitle}</p>
+              <p className="page-subtitle">{currentPage.subtitle}</p>
             </div>
           </div>
 
           <div className="top-actions">
             {/* Theme Toggle */}
             <button
+              className="theme-toggle-btn"
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              style={{
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-card)',
-                color: 'var(--text-main)',
-                padding: '0.55rem 0.9rem',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                fontSize: '0.85rem',
-                fontWeight: 600
-              }}
               title="Toggle Light/Dark Theme"
             >
               {theme === 'light' ? <Moon size={16} color="var(--accent-purple)" /> : <Sun size={16} color="var(--accent-amber)" />}
-              <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+              <span className="theme-toggle-text">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
             </button>
 
             {/* Authenticated User & Logout Bar */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-card)',
-              padding: '0.45rem 0.9rem',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.8rem'
-            }}>
-              <div style={{ fontSize: '0.82rem', textAlign: 'right' }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{user?.username || user?.email}</div>
-                <div style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
+            <div className="user-account-badge">
+              <div className="user-info-text">
+                <div className="user-name">{user?.username || user?.email}</div>
+                <div className="user-role-tag" style={{
                   color: user?.role === 'admin' ? '#ef4444' : user?.role === 'team_leader' ? '#f59e0b' : '#10b981'
                 }}>
                   {user?.role?.toUpperCase() || 'MEMBER'}
@@ -301,26 +279,14 @@ function DashboardContent({ onNavigate }) {
 
               <button
                 type="button"
+                className="btn-logout"
                 onClick={() => {
                   logout();
                   if (onNavigate) onNavigate('/admin-login');
                 }}
-                style={{
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid #ef4444',
-                  color: '#ef4444',
-                  padding: '0.45rem 0.8rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem'
-                }}
                 title="Log out of account"
               >
-                <LogOut size={14} /> Logout
+                <LogOut size={14} /> <span className="logout-text">Logout</span>
               </button>
             </div>
           </div>
