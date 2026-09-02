@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
-  XCircle
+  XCircle,
+  MoreVertical
 } from 'lucide-react';
 
 export default function NexusDashboard({ backlinks = [], projects = [], user }) {
@@ -270,119 +271,196 @@ export default function NexusDashboard({ backlinks = [], projects = [], user }) 
           justifyContent: 'space-between'
         }}>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.8rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.8rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <TrendingUp size={20} color="#10b981" /> Backlink Acquisition Trends
+                <h3 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <TrendingUp size={22} color="#f97316" /> Backlink Acquisition Trends
                 </h3>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                  Multi-trend tracking for Approved (Green), Broken (Yellow), and Rejected (Red)
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                  Multi-trend telemetry tracking for Approved, Broken, and Rejected backlinks
                 </p>
               </div>
 
-              {/* Timeframe Filter Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--input-bg)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
-                {['By Day', 'By Week', 'By Month'].map(range => (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setTimeRange(range)}
-                    style={{
-                      background: timeRange === range ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                      border: 'none',
-                      color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
-                      padding: '0.3rem 0.65rem',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {range}
-                  </button>
-                ))}
+              {/* Timeframe Filter Controls & 3-Dots Kebab Button */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--input-bg)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
+                  {['By Day', 'By Week', 'By Month'].map(range => (
+                    <button
+                      key={range}
+                      type="button"
+                      onClick={() => setTimeRange(range)}
+                      style={{
+                        background: timeRange === range ? 'linear-gradient(135deg, #f97316, #ea580c)' : 'transparent',
+                        border: 'none',
+                        color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    border: '1px solid var(--border-card)',
+                    background: 'var(--input-bg)',
+                    color: 'var(--text-main)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                  aria-label="Options Menu"
+                >
+                  <MoreVertical size={16} />
+                </button>
               </div>
             </div>
 
-            {/* Color-Coded 3-Line Legend */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', marginBottom: '1rem', flexWrap: 'wrap', fontSize: '0.78rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-                <strong style={{ color: '#10b981' }}>🟢 Approved ({liveCount})</strong>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
-                <strong style={{ color: '#f59e0b' }}>🟡 Broken ({brokenCount})</strong>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>
-                <strong style={{ color: '#ef4444' }}>🔴 Rejected ({removedCount})</strong>
-              </div>
-            </div>
-
-            {/* Non-Stretched Responsive SVG Chart */}
-            <div style={{ width: '100%', height: '220px', position: 'relative', marginTop: '0.5rem' }}>
-              <svg width="100%" height="200" viewBox="0 0 500 200" style={{ overflow: 'visible' }}>
+            {/* Image 2 Exact Match - Smooth Flowing Bezier S-Curve Graph with End Pill Badges & Inspection Tooltip */}
+            <div style={{ width: '100%', position: 'relative', marginTop: '0.5rem' }}>
+              <svg width="100%" height="230" viewBox="0 0 540 220" style={{ overflow: 'visible' }}>
                 <defs>
-                  <linearGradient id="nexusRealApprovedGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  {/* Line 1 Multi-Color Gradient (Lime Green -> Orange -> Red) */}
+                  <linearGradient id="line1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#a3e635" />
+                    <stop offset="45%" stopColor="#f97316" />
+                    <stop offset="100%" stopColor="#ff3b30" />
                   </linearGradient>
+
+                  {/* Soft Glow Fill Under Main Curve */}
+                  <linearGradient id="line1AreaGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
+                  </linearGradient>
+
+                  {/* Floating Pill Badges Gradients */}
+                  <linearGradient id="orangeBadgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ff5e36" />
+                    <stop offset="100%" stopColor="#ff2a00" />
+                  </linearGradient>
+
+                  <linearGradient id="slateBadgeGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#94a3b8" />
+                    <stop offset="100%" stopColor="#64748b" />
+                  </linearGradient>
+
+                  <linearGradient id="slateBadgeGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#cbd5e1" />
+                    <stop offset="100%" stopColor="#94a3b8" />
+                  </linearGradient>
+
+                  {/* Drop Shadow Filter for Approved Badge */}
+                  <filter id="badgeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#ff4500" floodOpacity="0.45" />
+                  </filter>
                 </defs>
 
-                {/* Horizontal Grid lines */}
-                <line x1="30" y1="30" x2="480" y2="30" stroke="rgba(125,125,125,0.12)" strokeDasharray="4 4" />
-                <line x1="30" y1="80" x2="480" y2="80" stroke="rgba(125,125,125,0.12)" strokeDasharray="4 4" />
-                <line x1="30" y1="130" x2="480" y2="130" stroke="rgba(125,125,125,0.12)" strokeDasharray="4 4" />
-                <line x1="30" y1="170" x2="480" y2="170" stroke="rgba(125,125,125,0.12)" strokeDasharray="4 4" />
+                {/* Y-Axis Labels on Left */}
+                <text x="25" y="29" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">100</text>
+                <text x="25" y="64" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">80</text>
+                <text x="25" y="99" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">60</text>
+                <text x="25" y="134" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">40</text>
+                <text x="25" y="169" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">20</text>
+                <text x="25" y="199" textAnchor="end" fill="var(--text-muted)" fontSize="11" fontWeight="600">0</text>
 
-                {/* Area Fill under Green Approved Line */}
+                {/* Horizontal Gridlines */}
+                <line x1="35" y1="25" x2="375" y2="25" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+                <line x1="35" y1="60" x2="375" y2="60" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+                <line x1="35" y1="95" x2="375" y2="95" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+                <line x1="35" y1="130" x2="375" y2="130" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+                <line x1="35" y1="165" x2="375" y2="165" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+                <line x1="35" y1="195" x2="375" y2="195" stroke="rgba(148, 163, 184, 0.18)" strokeWidth="1" />
+
+                {/* Area Glow under Top Approved Curve */}
                 <path
-                  d="M 40 150 Q 150 120, 260 80 T 460 35 L 460 170 L 40 170 Z"
-                  fill="url(#nexusRealApprovedGrad)"
+                  d="M 38 145 C 140 145, 210 145, 250 85 C 290 25, 340 32, 380 32 L 380 195 L 38 195 Z"
+                  fill="url(#line1AreaGlow)"
                 />
 
-                {/* LINE 1: 🟢 Approved Backlinks (Green Curve) */}
+                {/* LINE 1: 🟢 Approved Backlinks (Top Flowing S-Curve) */}
                 <path
-                  d="M 40 150 Q 150 120, 260 80 T 460 35"
+                  d="M 38 145 C 140 145, 210 145, 250 85 C 290 25, 340 32, 380 32"
                   fill="none"
-                  stroke="#10b981"
+                  stroke="url(#line1Grad)"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                />
+
+                {/* LINE 2: 🟡 Broken / Pending Backlinks (Middle Flowing S-Curve) */}
+                <path
+                  d="M 38 174 C 140 174, 210 174, 250 120 C 290 75, 340 75, 380 75"
+                  fill="none"
+                  stroke="#94a3b8"
                   strokeWidth="3.2"
                   strokeLinecap="round"
+                  opacity="0.9"
                 />
 
-                {/* LINE 2: 🟡 Broken / Pending Backlinks (Yellow Curve) */}
+                {/* LINE 3: 🔴 Rejected / Removed Backlinks (Bottom Flowing S-Curve) */}
                 <path
-                  d="M 40 165 Q 150 160, 260 155 T 460 150"
+                  d="M 38 186 C 140 186, 210 186, 250 160 C 290 135, 340 135, 380 135"
                   fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="2.5"
+                  stroke="#cbd5e1"
+                  strokeWidth="2.8"
                   strokeLinecap="round"
+                  opacity="0.8"
                 />
 
-                {/* LINE 3: 🔴 Rejected / Removed Backlinks (Red Curve) */}
-                <path
-                  d="M 40 170 Q 150 168, 260 165 T 460 165"
-                  fill="none"
-                  stroke="#ef4444"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
+                {/* Interactive Inspection Dotted Line with Top ▲ & Bottom ▼ Pointer Markers */}
+                <line x1="200" y1="12" x2="200" y2="195" stroke="var(--text-main)" strokeWidth="2" strokeDasharray="3 3" />
+                <polygon points="200,8 194,15 206,15" fill="var(--text-main)" />
+                <polygon points="200,198 194,191 206,191" fill="var(--text-main)" />
 
-                {/* Interactive Data Point Nodes */}
-                <circle cx="260" cy="80" r="4.5" fill="#ffffff" stroke="#10b981" strokeWidth="2.5" />
-                <circle cx="460" cy="35" r="5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                {/* Circular Active Ring Node at Inspection Line */}
+                <circle cx="200" cy="145" r="7.5" fill="#ffffff" stroke="#f97316" strokeWidth="3.5" />
 
-                {/* Tooltip Badge */}
-                <g transform="translate(400, 10)">
-                  <rect width="75" height="20" rx="5" fill="#10b981" />
-                  <text x="37" y="14" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="800">{liveCount} Approved</text>
+                {/* Floating Black Inspection Tooltip Badge */}
+                <g transform="translate(155, 102)">
+                  <rect width="90" height="28" rx="14" fill="#000000" />
+                  <text x="45" y="18" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="700">
+                    {liveCount} <tspan fill="#4ade80">+1.2%</tspan>
+                  </text>
+                </g>
+
+                {/* Floating Endpoint Pill Badges (Matching Image 2 Right Side) */}
+                {/* 1. Approved Badge */}
+                <g filter="url(#badgeGlow)">
+                  <rect x="380" y="16" width="145" height="32" rx="16" fill="url(#orangeBadgeGrad)" />
+                  <text x="452" y="37" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="800">
+                    Approved ({liveCount})
+                  </text>
+                </g>
+
+                {/* 2. Broken Badge */}
+                <g>
+                  <rect x="380" y="59" width="145" height="32" rx="16" fill="url(#slateBadgeGrad1)" />
+                  <text x="452" y="80" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="800">
+                    Broken ({brokenCount})
+                  </text>
+                </g>
+
+                {/* 3. Rejected Badge */}
+                <g>
+                  <rect x="380" y="119" width="145" height="32" rx="16" fill="url(#slateBadgeGrad2)" />
+                  <text x="452" y="140" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="800">
+                    Rejected ({removedCount})
+                  </text>
                 </g>
               </svg>
 
               {/* Time Range X-Axis Labels */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '40px', paddingRight: '20px', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', width: '345px', justifyContent: 'space-between', marginLeft: '35px', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '4px' }}>
                 {timeRange === 'By Day' && (
                   <>
                     <span>Mon</span>
