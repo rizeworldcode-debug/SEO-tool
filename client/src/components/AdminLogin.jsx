@@ -35,7 +35,7 @@ export default function AdminLogin({ onNavigate }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+      background: 'linear-gradient(135deg, #09090b 0%, #18181b 50%, #431407 100%)',
       padding: '1.5rem',
       fontFamily: "'Outfit', 'Inter', sans-serif",
       color: '#f8fafc'

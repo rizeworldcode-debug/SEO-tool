@@ -1,10 +1,10 @@
 :root {
-  --bg-dark: linear-gradient(135deg, #0f172a 0%, #1c1917 35%, #7c2d12 75%, #ea580c 100%);
-  --bg-card: rgba(15, 23, 42, 0.82);
-  --bg-sidebar: rgba(15, 23, 42, 0.92);
-  --border-card: rgba(255, 255, 255, 0.14);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --bg-dark: linear-gradient(135deg, #0e0e10 0%, #18181b 35%, #431407 75%, #ea580c 100%);
+  --bg-card: rgba(24, 24, 28, 0.88);
+  --bg-sidebar: rgba(18, 18, 20, 0.95);
+  --border-card: rgba(255, 255, 255, 0.12);
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
   --text-primary-contrast: #ffffff;
   --accent-cyan: #f97316;
   --accent-blue: #f97316;
@@ -12,9 +12,9 @@
   --accent-green: #10b981;
   --accent-amber: #f97316;
   --accent-red: #ef4444;
-  --input-bg: rgba(0, 0, 0, 0.35);
+  --input-bg: rgba(0, 0, 0, 0.4);
   --input-color: #ffffff;
-  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.55);
   --title-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   --title-fill: transparent;
   --sidebar-width: 270px;
