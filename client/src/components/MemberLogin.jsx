@@ -42,7 +42,7 @@ export default function MemberLogin({ onNavigate }) {
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #09090b 0%, #18181b 50%, #431407 100%)',
       padding: '1.5rem',
-      fontFamily: "'Outfit', 'Inter', sans-serif",
+      fontFamily: "'Playfair Display', Georgia, serif",
       color: '#f8fafc'
     }}>
       <div style={{

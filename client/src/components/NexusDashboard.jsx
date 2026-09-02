@@ -39,7 +39,7 @@ export default function NexusDashboard({ backlinks = [], projects = [], user }) 
     <div style={{
       background: 'var(--bg-dark)',
       minHeight: '100%',
-      fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+      fontFamily: "'Playfair Display', Georgia, serif",
       color: 'var(--text-main)',
       display: 'grid',
       gap: '1.5rem'

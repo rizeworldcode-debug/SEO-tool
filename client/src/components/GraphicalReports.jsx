@@ -48,7 +48,7 @@ export default function GraphicalReports({ backlinks = [] }) {
   const removedStroke = (removedCount / total) * circumference;
 
   return (
-    <div style={{ display: 'grid', gap: '1.8rem', fontFamily: "'Outfit', 'Inter', sans-serif" }}>
+    <div style={{ display: 'grid', gap: '1.8rem', fontFamily: "'Playfair Display', Georgia, serif" }}>
       {/* Header Banner */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
