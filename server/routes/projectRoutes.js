@@ -5,7 +5,19 @@ const Project = require('../models/Project');
 const { authenticateToken, requireRole, sanitizeProjectResponse } = require('../utils/auth');
 const { encryptCredentials } = require('../utils/encryption');
 
-const mockProjects = [];
+function normalizeUrl(urlStr) {
+  if (!urlStr) return '';
+  try {
+    let formatted = urlStr.trim().toLowerCase();
+    if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+      formatted = 'https://' + formatted;
+    }
+    const parsed = new URL(formatted);
+    return (parsed.hostname.replace(/^www\./, '') + parsed.pathname.replace(/\/$/, '')).toLowerCase();
+  } catch (e) {
+    return urlStr.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+  }
+}
 
 // 1. POST /api/projects — Admin & Team Leader only
 router.post('/', authenticateToken, requireRole('admin', 'team_leader'), async (req, res) => {
@@ -41,6 +53,22 @@ router.post('/', authenticateToken, requireRole('admin', 'team_leader'), async (
 
     if (!businessName || !projectUrl) {
       return res.status(400).json({ error: 'Missing required fields: businessName, projectUrl' });
+    }
+
+    // Duplicate project URL check
+    const incomingNorm = normalizeUrl(projectUrl);
+    let existingProjects = [];
+    if (mongoose.connection.readyState === 1) {
+      existingProjects = await Project.find();
+    } else {
+      existingProjects = mockProjects;
+    }
+
+    const duplicateProject = existingProjects.find(p => normalizeUrl(p.projectUrl) === incomingNorm);
+    if (duplicateProject) {
+      return res.status(400).json({
+        error: `A project profile with URL "${projectUrl}" already exists ("${duplicateProject.businessName}")! Duplicate project profiles are not allowed.`
+      });
     }
 
     let encryptedOffPage = null;
@@ -219,6 +247,22 @@ router.put('/:id', authenticateToken, requireRole('admin', 'team_leader'), async
 
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
+    }
+
+    if (req.body.projectUrl && req.body.projectUrl !== project.projectUrl) {
+      const incomingNorm = normalizeUrl(req.body.projectUrl);
+      let existingProjects = [];
+      if (mongoose.connection.readyState === 1) {
+        existingProjects = await Project.find({ _id: { $ne: req.params.id } });
+      } else {
+        existingProjects = mockProjects.filter(p => (p._id || p.id) !== req.params.id);
+      }
+      const duplicateProject = existingProjects.find(p => normalizeUrl(p.projectUrl) === incomingNorm);
+      if (duplicateProject) {
+        return res.status(400).json({
+          error: `Another project profile with URL "${req.body.projectUrl}" already exists ("${duplicateProject.businessName}")!`
+        });
+      }
     }
 
     const fields = [

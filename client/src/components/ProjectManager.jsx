@@ -99,10 +99,32 @@ export default function ProjectManager() {
     fetchProjects();
   }, [user, token]);
 
+  const normalizeUrl = (urlStr) => {
+    if (!urlStr) return '';
+    try {
+      let formatted = urlStr.trim().toLowerCase();
+      if (!formatted.startsWith('http://') && !formatted.startsWith('https://')) {
+        formatted = 'https://' + formatted;
+      }
+      const parsed = new URL(formatted);
+      return (parsed.hostname.replace(/^www\./, '') + parsed.pathname.replace(/\/$/, '')).toLowerCase();
+    } catch (e) {
+      return urlStr.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    // Client-side duplicate project URL validation
+    const incomingNorm = normalizeUrl(form.projectUrl);
+    const duplicateProject = projects.find(p => normalizeUrl(p.projectUrl) === incomingNorm);
+    if (duplicateProject) {
+      setError(`A master project profile with URL "${form.projectUrl}" already exists ("${duplicateProject.businessName}")! Duplicate project profiles are not allowed.`);
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/projects`, {
