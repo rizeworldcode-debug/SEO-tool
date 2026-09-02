@@ -1,0 +1,12 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/pipeline/env/bin/python3",
+  "python.pythonPath": "${workspaceFolder}/pipeline/env/bin/python3",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/pipeline/env/lib/python3.13/site-packages",
+    "${workspaceFolder}/pipeline"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/pipeline/env/lib/python3.13/site-packages",
+    "${workspaceFolder}/pipeline"
+  ]
+}

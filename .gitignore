@@ -1,0 +1,27 @@
+# Environment & Secrets
+.env
+*.env
+*.key
+secrets.json
+
+# Dependencies & Build
+node_modules/
+dist/
+build/
+
+# Python Virtual Environment & Cache
+env/
+pipeline/env/
+__pycache__/
+*.pyc
+
+# Local Data Cache & Parquet Output Files
+*.parquet
+pipeline/data/**/*.parquet
+pipeline/data/**/*.json
+pipeline/pipeline/
+!**/data/.gitkeep
+
+# System & OS
+.DS_Store
+._*

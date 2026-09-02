@@ -1,0 +1,24 @@
+{
+  "name": "seo-metrics-server",
+  "version": "1.0.0",
+  "description": "Backend API for Independent SEO Metrics Engine (Authority Score, Page Score, Spam Score)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.4.1",
+    "tldts": "^6.1.22"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
+  }
+}
