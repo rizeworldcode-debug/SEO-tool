@@ -6,7 +6,7 @@
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-primary-contrast: #ffffff;
-  --accent-cyan: #38bdf8;
+  --accent-cyan: #f97316;
   --accent-blue: #f97316;
   --accent-purple: #a855f7;
   --accent-green: #10b981;
@@ -28,16 +28,16 @@
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-primary-contrast: #0f172a;
-  --accent-cyan: #0284c7;
-  --accent-blue: #2563eb;
+  --accent-cyan: #ea580c;
+  --accent-blue: #ea580c;
   --accent-purple: #7c3aed;
   --accent-green: #059669;
-  --accent-amber: #d97706;
+  --accent-amber: #ea580c;
   --accent-red: #dc2626;
   --input-bg: #f8fafc;
   --input-color: #0f172a;
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.04);
-  --title-gradient: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  --title-gradient: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
   --title-fill: transparent;
 }
 
@@ -470,7 +470,7 @@ h1, h2, h3, h4, h5, h6, th, td, label, p, span, div, button, option, select, .br
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   border: none;
   color: #ffffff;
   font-weight: 700;
@@ -485,7 +485,7 @@ h1, h2, h3, h4, h5, h6, th, td, label, p, span, div, button, option, select, .br
 
 .search-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
 }
 
 .disclaimer-banner {
