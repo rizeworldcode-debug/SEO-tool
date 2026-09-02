@@ -246,9 +246,13 @@ function DashboardContent({ onNavigate }) {
               <Menu size={22} />
             </button>
 
+            <div className="mobile-header-logo">
+              <img src="/logo.png" alt="RizeWorld Logo" />
+            </div>
+
             <div className="page-title-group">
               <h1>
-                <IconComponent size={24} color="var(--accent-cyan)" />
+                <IconComponent size={24} color="var(--accent-cyan)" className="page-header-icon" />
                 <span>{currentPage.label}</span>
               </h1>
               <p className="page-subtitle">{currentPage.subtitle}</p>

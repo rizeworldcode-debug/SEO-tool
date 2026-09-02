@@ -223,6 +223,26 @@ h1, h2, h3, h4, h5, h6, th, td, label, p, span, div, button, option, select, .br
   min-width: 0;
 }
 
+.mobile-header-logo {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 3px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mobile-header-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .page-title-group {
   min-width: 0;
 }
@@ -356,6 +376,12 @@ h1, h2, h3, h4, h5, h6, th, td, label, p, span, div, button, option, select, .br
   }
   .mobile-nav-toggle {
     display: block;
+  }
+  .mobile-header-logo {
+    display: flex;
+  }
+  .page-header-icon {
+    display: none;
   }
 }
 
