@@ -1,8 +1,8 @@
 :root {
-  --bg-dark: #0c1017;
-  --bg-card: rgba(26, 35, 51, 0.88);
-  --bg-sidebar: rgba(12, 16, 23, 0.95);
-  --border-card: rgba(255, 255, 255, 0.12);
+  --bg-dark: #161b26;
+  --bg-card: rgba(33, 44, 65, 0.92);
+  --bg-sidebar: rgba(18, 23, 33, 0.96);
+  --border-card: rgba(255, 255, 255, 0.14);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-primary-contrast: #ffffff;
@@ -12,9 +12,9 @@
   --accent-green: #10b981;
   --accent-amber: #f59e0b;
   --accent-red: #ef4444;
-  --input-bg: rgba(0, 0, 0, 0.35);
+  --input-bg: rgba(0, 0, 0, 0.25);
   --input-color: #ffffff;
-  --shadow-card: 0 12px 35px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.35);
   --title-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
   --title-fill: transparent;
   --sidebar-width: 270px;
