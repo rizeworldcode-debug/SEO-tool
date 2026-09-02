@@ -142,7 +142,7 @@ function DashboardContent({ onNavigate }) {
 
   // Nav item list configuration
   const settingsItems = [
-    { id: 'nexus', label: 'Nexus Dashboard Overview', icon: LayoutDashboard, subtitle: 'Executive revenue & campaign telemetry' },
+    { id: 'nexus', label: 'Dashboard Overview', icon: LayoutDashboard, subtitle: 'Executive revenue & campaign telemetry' },
     { id: 'ads', label: 'Ads Dashboard', icon: Megaphone, subtitle: 'PPC & paid campaign performance analytics' },
     { id: 'submit', label: 'Submit Backlink', icon: Link2, subtitle: 'Add new link target with domain autofill' },
     { id: 'projects', label: 'Master Projects', icon: Building2, subtitle: 'Manage target projects & domains' }
