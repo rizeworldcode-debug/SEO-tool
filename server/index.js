@@ -41,8 +41,22 @@ const { FRONTEND_URL, PYTHON_API_URL } = require('./config');
 const app = express();
 const PORT = process.env.PORT || 5005;
 
+const allowedOrigins = [
+  FRONTEND_URL,
+  'https://seo-tool-plum.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5005'
+].flatMap(url => (url ? url.split(',').map(s => s.trim()) : []));
+
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' ? FRONTEND_URL : true,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true
 };
 
