@@ -1,21 +1,21 @@
 :root {
-  --bg-dark: #242735;
-  --bg-card: #323648;
-  --bg-sidebar: #1d202d;
-  --border-card: rgba(255, 255, 255, 0.15);
-  --text-main: #f8fafc;
-  --text-muted: #a0aec0;
+  --bg-dark: #2d3748;
+  --bg-card: #1a202c;
+  --bg-sidebar: #171923;
+  --border-card: rgba(255, 255, 255, 0.16);
+  --text-main: #f7fafc;
+  --text-muted: #cbd5e0;
   --text-primary-contrast: #ffffff;
   --accent-cyan: #38bdf8;
   --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
+  --accent-purple: #a855f7;
   --accent-green: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-red: #ef4444;
-  --input-bg: rgba(0, 0, 0, 0.2);
+  --accent-amber: #f6ad55;
+  --accent-red: #fc8181;
+  --input-bg: rgba(0, 0, 0, 0.35);
   --input-color: #ffffff;
-  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.3);
-  --title-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+  --shadow-card: 0 14px 35px rgba(0, 0, 0, 0.45);
+  --title-gradient: linear-gradient(135deg, #63b3ed 0%, #3182ce 100%);
   --title-fill: transparent;
   --sidebar-width: 270px;
 }
