@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
-import { Users, UserPlus, ShieldAlert, CheckCircle2, Shield, User, Mail, Key } from 'lucide-react';
+import { Users, UserPlus, ShieldAlert, CheckCircle2, Shield, User, Mail, Key, Pencil, Trash2, X } from 'lucide-react';
 
 export default function UserManagement() {
   const { token, user } = useAuth();
@@ -16,6 +16,17 @@ export default function UserManagement() {
     password: '',
     role: 'team_member'
   });
+
+  // Edit User Modal State
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'team_member'
+  });
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState('');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -84,6 +95,76 @@ export default function UserManagement() {
       }
     } catch (err) {
       console.error('Role update error:', err);
+    }
+  };
+
+  const openEditModal = (u) => {
+    setEditingUser(u);
+    setEditForm({
+      username: u.username || '',
+      email: u.email || '',
+      password: '',
+      role: u.role || 'team_member'
+    });
+    setEditError('');
+    setEditSuccess('');
+  };
+
+  const handleEditUserSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setEditError('');
+    setEditSuccess('');
+
+    const uid = editingUser._id || editingUser.id;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(editForm)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setEditSuccess(`User account "${editForm.username}" updated successfully!`);
+        setTimeout(() => {
+          setEditingUser(null);
+          fetchUsers();
+        }, 1000);
+      } else {
+        setEditError(data.error || 'Failed to update user account');
+      }
+    } catch (err) {
+      setEditError('Network error updating user account');
+    }
+  };
+
+  const handleDeleteUser = async (u) => {
+    const uid = u._id || u.id;
+    if (user?.id === uid) {
+      alert('You cannot delete your own active logged-in admin account!');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete user account "${u.username}" (${u.email})?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${uid}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fetchUsers();
+      } else {
+        alert(data.error || 'Failed to delete user account');
+      }
+    } catch (err) {
+      alert('Network error deleting user account');
     }
   };
 
@@ -204,7 +285,8 @@ export default function UserManagement() {
                   <th style={{ padding: '0.8rem 1rem' }}>User Name</th>
                   <th style={{ padding: '0.8rem 1rem' }}>Email Address</th>
                   <th style={{ padding: '0.8rem 1rem' }}>Assigned Role</th>
-                  <th style={{ padding: '0.8rem 1rem' }}>Actions / Role Update</th>
+                  <th style={{ padding: '0.8rem 1rem' }}>Role Update</th>
+                  <th style={{ padding: '0.8rem 1rem', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -237,6 +319,49 @@ export default function UserManagement() {
                         <option value="team_member">Team Member</option>
                       </select>
                     </td>
+                    <td style={{ padding: '0.8rem 1rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(u)}
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.15)',
+                            border: '1px solid #3b82f6',
+                            color: '#60a5fa',
+                            padding: '0.35rem 0.65rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.78rem',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}
+                        >
+                          <Pencil size={13} /> Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUser(u)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.12)',
+                            border: '1px solid #ef4444',
+                            color: '#ef4444',
+                            padding: '0.35rem 0.65rem',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.78rem',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                          }}
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -244,6 +369,136 @@ export default function UserManagement() {
           </div>
         )}
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-card)',
+            borderRadius: '14px',
+            width: '100%',
+            maxWidth: '500px',
+            padding: '1.8rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setEditingUser(null)}
+              style={{
+                position: 'absolute',
+                top: '1.2rem',
+                right: '1.2rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-cyan)' }}>
+              <Pencil size={20} /> Edit User Account
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>
+              Update username, email, role, or change password for user <strong>{editingUser.username}</strong>.
+            </p>
+
+            {editError && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0.7rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                {editError}
+              </div>
+            )}
+
+            {editSuccess && (
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', color: '#10b981', padding: '0.7rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CheckCircle2 size={16} /> {editSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleEditUserSubmit} style={{ display: 'grid', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Full Name / Username</label>
+                <input
+                  type="text"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.username}
+                  onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Email Address</label>
+                <input
+                  type="email"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.email}
+                  onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>New Password (Leave blank to keep unchanged)</label>
+                <input
+                  type="password"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.password}
+                  onChange={e => setEditForm({ ...editForm, password: e.target.value })}
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Role</label>
+                <select
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', cursor: 'pointer' }}
+                  value={editForm.role}
+                  onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                >
+                  <option value="team_member">Team Member (Submit & View)</option>
+                  <option value="team_leader">Team Leader (Manage Projects & Links)</option>
+                  <option value="admin">Admin (Full Control)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '0.8rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="search-input"
+                  style={{ padding: '0.55rem 1.2rem', cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="search-btn"
+                  style={{ padding: '0.55rem 1.4rem', fontSize: '0.85rem' }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

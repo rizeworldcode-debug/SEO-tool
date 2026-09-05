@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
+import { exportFinalBacklinksExcel } from '../utils/exportExcel';
 import {
   Link2,
   Sparkles,
@@ -13,7 +14,11 @@ import {
   Globe,
   BarChart,
   Tag,
-  ArrowRight
+  ArrowRight,
+  Download,
+  Pencil,
+  Trash2,
+  X
 } from 'lucide-react';
 
 export default function BacklinkSubmit() {
@@ -48,6 +53,22 @@ export default function BacklinkSubmit() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   const [submittedList, setSubmittedList] = useState([]);
+
+  // Edit Backlink Modal state
+  const [editingBacklink, setEditingBacklink] = useState(null);
+  const [editForm, setEditForm] = useState({
+    url: '',
+    domain: '',
+    linkType: 'Profile',
+    daSnapshot: '',
+    paSnapshot: '',
+    traffic: '',
+    followType: 'Do-Follow',
+    status: 'Approved',
+    anchorText: ''
+  });
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState('');
 
   // Fetch Projects List for Dropdown
   const fetchProjects = async () => {
@@ -123,13 +144,26 @@ export default function BacklinkSubmit() {
     setSubmitting(true);
     setMessage(null);
 
+    // Requirement 4: Auto-generate random DA (20-85) and PA (25-90) if not entered
+    let targetDa = domainAuthority;
+    let targetPa = pageAuthority;
+
+    if (!targetDa || String(targetDa).trim() === '') {
+      targetDa = String(Math.floor(Math.random() * 66) + 20);
+      setDomainAuthority(targetDa);
+    }
+    if (!targetPa || String(targetPa).trim() === '') {
+      targetPa = String(Math.floor(Math.random() * 66) + 25);
+      setPageAuthority(targetPa);
+    }
+
     const payload = {
       projectId: selectedProjectId,
       url: publicLink,
       domain: domainUrl,
       linkType,
-      daSnapshot: domainAuthority,
-      paSnapshot: pageAuthority,
+      daSnapshot: targetDa,
+      paSnapshot: targetPa,
       traffic,
       followType,
       status,
@@ -151,7 +185,7 @@ export default function BacklinkSubmit() {
       if (res.ok) {
         setMessage({
           type: 'success',
-          text: `Backlink submitted! Created by ${user?.username ? user.username.toUpperCase() : 'DEVENDRA'} at ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`
+          text: `Backlink submitted successfully (DA: ${data.backlink?.daSnapshot || targetDa}, PA: ${data.backlink?.paSnapshot || targetPa})! Created by ${user?.username ? user.username.toUpperCase() : 'DEVENDRA'}`
         });
         setPublicLink('');
         fetchBacklinks();
@@ -162,6 +196,76 @@ export default function BacklinkSubmit() {
       setMessage({ type: 'error', text: 'Network error submitting backlink' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (item) => {
+    setEditingBacklink(item);
+    setEditForm({
+      url: item.url || '',
+      domain: item.rootDomain || '',
+      linkType: item.linkType || 'Profile',
+      daSnapshot: item.daSnapshot !== undefined ? String(item.daSnapshot) : '',
+      paSnapshot: item.paSnapshot !== undefined ? String(item.paSnapshot) : '',
+      traffic: item.traffic || '',
+      followType: item.followType || 'Do-Follow',
+      status: item.status || 'Approved',
+      anchorText: item.anchorText || ''
+    });
+    setEditError('');
+    setEditSuccess('');
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingBacklink) return;
+
+    setEditError('');
+    setEditSuccess('');
+
+    const bid = editingBacklink._id || editingBacklink.id;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/backlinks/${bid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(editForm)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setEditSuccess('Backlink record updated successfully!');
+        setTimeout(() => {
+          setEditingBacklink(null);
+          fetchBacklinks();
+        }, 800);
+      } else {
+        setEditError(data.error || 'Failed to update backlink');
+      }
+    } catch (err) {
+      setEditError('Network error updating backlink');
+    }
+  };
+
+  const handleDeleteBacklink = async (item) => {
+    const bid = item._id || item.id;
+    if (!window.confirm(`Are you sure you want to delete backlink entry '${item.url}'?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/backlinks/${bid}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        fetchBacklinks();
+      } else {
+        alert(data.error || 'Failed to delete backlink');
+      }
+    } catch (err) {
+      alert('Network error deleting backlink');
     }
   };
 
@@ -176,7 +280,7 @@ export default function BacklinkSubmit() {
           <Link2 size={24} color="var(--accent-green)" /> Submit Backlink Record
         </h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>
-          Fill in all backlink submission columns. Date Created is auto-captured via <code>Date.now</code> and Responsible Person is auto-linked to your logged-in user account.
+          Fill in backlink submission details. DA and PA are optional — if left blank, random values (DA 20-85, PA 25-90) will be automatically assigned.
         </p>
 
         {/* Auto-Captured Banner */}
@@ -325,27 +429,31 @@ export default function BacklinkSubmit() {
 
             {/* Domain Authority */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Domain Authority (DA)</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>
+                Domain Authority (DA) <span style={{ color: 'var(--accent-amber)', fontSize: '0.75rem' }}>(Auto-Random if blank)</span>
+              </label>
               <input
                 type="number"
                 className="search-input"
                 style={{ width: '100%', padding: '0.65rem 0.8rem' }}
                 value={domainAuthority}
                 onChange={e => setDomainAuthority(e.target.value)}
-                placeholder="85"
+                placeholder="Auto-generated if left blank"
               />
             </div>
 
             {/* Page Authority */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Page Authority (PA)</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>
+                Page Authority (PA) <span style={{ color: 'var(--accent-amber)', fontSize: '0.75rem' }}>(Auto-Random if blank)</span>
+              </label>
               <input
                 type="number"
                 className="search-input"
                 style={{ width: '100%', padding: '0.65rem 0.8rem' }}
                 value={pageAuthority}
                 onChange={e => setPageAuthority(e.target.value)}
-                placeholder="42"
+                placeholder="Auto-generated if left blank"
               />
             </div>
 
@@ -389,9 +497,21 @@ export default function BacklinkSubmit() {
 
       {/* Live Spreadsheet View Table */}
       <div>
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Shield size={20} color="var(--accent-cyan)" /> Live Backlink Submissions ({submittedList.length})
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h3 style={{ fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Shield size={20} color="var(--accent-cyan)" /> Live Backlink Submissions ({submittedList.length})
+          </h3>
+
+          {/* Final Backlink Export Button */}
+          <button
+            type="button"
+            onClick={() => exportFinalBacklinksExcel(submittedList)}
+            className="search-btn"
+            style={{ background: 'linear-gradient(135deg, var(--accent-green), #059669)', padding: '0.55rem 1.1rem', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Download size={16} /> Export Final Main Domains (Excel)
+          </button>
+        </div>
 
         {submittedList.length === 0 ? (
           <div style={{ padding: '2.5rem', textAlign: 'center', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-card)', color: 'var(--text-muted)' }}>
@@ -412,6 +532,7 @@ export default function BacklinkSubmit() {
                   <th style={{ padding: '0.8rem 1rem' }}>Public Link</th>
                   <th style={{ padding: '0.8rem 1rem' }}>DoFollow / NoFollow</th>
                   <th style={{ padding: '0.8rem 1rem' }}>Status</th>
+                  <th style={{ padding: '0.8rem 1rem', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,6 +610,51 @@ export default function BacklinkSubmit() {
                           {item.status || 'Approved'}
                         </span>
                       </td>
+
+                      {/* Actions */}
+                      <td style={{ padding: '0.8rem 1rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(item)}
+                            style={{
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              border: '1px solid #3b82f6',
+                              color: '#60a5fa',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem'
+                            }}
+                          >
+                            <Pencil size={12} /> Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBacklink(item)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.12)',
+                              border: '1px solid #ef4444',
+                              color: '#ef4444',
+                              padding: '0.3rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem'
+                            }}
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -497,6 +663,193 @@ export default function BacklinkSubmit() {
           </div>
         )}
       </div>
+
+      {/* Edit Backlink Modal */}
+      {editingBacklink && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-card)',
+            borderRadius: '14px',
+            width: '100%',
+            maxWidth: '550px',
+            padding: '1.8rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setEditingBacklink(null)}
+              style={{
+                position: 'absolute',
+                top: '1.2rem',
+                right: '1.2rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-cyan)' }}>
+              <Pencil size={20} /> Edit Backlink Submission
+            </h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.2rem' }}>
+              Modify backlink parameters for target domain: <strong>{editForm.domain || editingBacklink.url}</strong>
+            </p>
+
+            {editError && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#ef4444', padding: '0.7rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem' }}>
+                {editError}
+              </div>
+            )}
+
+            {editSuccess && (
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', color: '#10b981', padding: '0.7rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CheckCircle2 size={16} /> {editSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleEditSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Public Link (Backlink URL)</label>
+                <input
+                  type="text"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.url}
+                  onChange={e => setEditForm({ ...editForm, url: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Type</label>
+                <select
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', cursor: 'pointer' }}
+                  value={editForm.linkType}
+                  onChange={e => setEditForm({ ...editForm, linkType: e.target.value })}
+                >
+                  <option value="Profile">Profile</option>
+                  <option value="Directory">Directory</option>
+                  <option value="Guest Post">Guest Post</option>
+                  <option value="Forum">Forum</option>
+                  <option value="Web 2.0">Web 2.0</option>
+                  <option value="Social Bookmark">Social Bookmark</option>
+                  <option value="Article">Article</option>
+                  <option value="Comment">Comment</option>
+                  <option value="PDF Submission">PDF Submission</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Follow Type</label>
+                <select
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', cursor: 'pointer' }}
+                  value={editForm.followType}
+                  onChange={e => setEditForm({ ...editForm, followType: e.target.value })}
+                >
+                  <option value="Do-Follow">Do-Follow</option>
+                  <option value="No-Follow">No-Follow</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Domain Authority (DA)</label>
+                <input
+                  type="number"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.daSnapshot}
+                  onChange={e => setEditForm({ ...editForm, daSnapshot: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Page Authority (PA)</label>
+                <input
+                  type="number"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.paSnapshot}
+                  onChange={e => setEditForm({ ...editForm, paSnapshot: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Traffic</label>
+                <input
+                  type="text"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.traffic}
+                  onChange={e => setEditForm({ ...editForm, traffic: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Status</label>
+                <select
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', cursor: 'pointer' }}
+                  value={editForm.status}
+                  onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                >
+                  <option value="Approved">Approved</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Live">Live</option>
+                  <option value="Removed">Removed</option>
+                  <option value="Broken">Broken</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: '0.3rem', color: 'var(--text-muted)' }}>Anchor Text</label>
+                <input
+                  type="text"
+                  className="search-input"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem' }}
+                  value={editForm.anchorText}
+                  onChange={e => setEditForm({ ...editForm, anchorText: e.target.value })}
+                />
+              </div>
+
+              <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingBacklink(null)}
+                  className="search-input"
+                  style={{ padding: '0.55rem 1.2rem', cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="search-btn"
+                  style={{ padding: '0.55rem 1.4rem', fontSize: '0.85rem' }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

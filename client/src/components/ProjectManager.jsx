@@ -17,7 +17,10 @@ import {
   Award,
   BarChart2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Pencil,
+  Trash2,
+  X
 } from 'lucide-react';
 
 export default function ProjectManager() {
@@ -28,6 +31,7 @@ export default function ProjectManager() {
   const [success, setSuccess] = useState('');
   const [activeFormTab, setActiveFormTab] = useState('project');
   const [expandedProjectId, setExpandedProjectId] = useState(null);
+  const [editingProjectId, setEditingProjectId] = useState(null);
 
   const [form, setForm] = useState({
     // Section 1: Website & Project Info
@@ -113,22 +117,131 @@ export default function ProjectManager() {
     }
   };
 
+  const handleEditClick = (proj) => {
+    const pid = proj._id || proj.id;
+    setEditingProjectId(pid);
+    setForm({
+      businessName: proj.businessName || '',
+      projectUrl: proj.projectUrl || '',
+      targetLocation: proj.targetLocation || '',
+      goal: proj.goal || '',
+      category: proj.category || '',
+      username: proj.username || '',
+      domainAuthority: String(proj.domainAuthority || 0),
+      pageAuthority: String(proj.pageAuthority || 0),
+      spamScore: String(proj.spamScore || 0),
+      targetKeywords: Array.isArray(proj.targetKeywords) ? proj.targetKeywords.join(', ') : (proj.targetKeywords || ''),
+
+      firstName: proj.firstName || '',
+      lastName: proj.lastName || '',
+      designation: proj.designation || '',
+      address: proj.address || '',
+      city: proj.city || '',
+      state: proj.state || '',
+      postcode: proj.postcode || '',
+      country: proj.country || '',
+      website: proj.website || proj.projectUrl || '',
+      phone: proj.phone || '',
+      businessEmail: proj.businessEmail || '',
+      numberOfEmployees: proj.numberOfEmployees || '',
+      businessHours: proj.businessHours || '',
+      yearOfEstablishment: proj.yearOfEstablishment || '',
+
+      facebook: proj.socialLinks?.facebook || '',
+      instagram: proj.socialLinks?.instagram || '',
+      youtube: proj.socialLinks?.youtube || '',
+      linkedin: proj.socialLinks?.linkedin || '',
+      twitter: proj.socialLinks?.twitter || '',
+
+      offPageEmail: proj.offPageLogin?.email || '',
+      offPagePassword: proj.offPageLogin?.password || ''
+    });
+    setActiveFormTab('project');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProjectId(null);
+    setForm({
+      businessName: '',
+      projectUrl: '',
+      targetLocation: '',
+      goal: '',
+      category: '',
+      username: '',
+      domainAuthority: '0',
+      pageAuthority: '0',
+      spamScore: '0',
+      targetKeywords: '',
+      firstName: '',
+      lastName: '',
+      designation: '',
+      address: '',
+      city: '',
+      state: '',
+      postcode: '',
+      country: '',
+      website: '',
+      phone: '',
+      businessEmail: '',
+      numberOfEmployees: '',
+      businessHours: '',
+      yearOfEstablishment: '',
+      facebook: '',
+      instagram: '',
+      youtube: '',
+      linkedin: '',
+      twitter: '',
+      offPageEmail: '',
+      offPagePassword: ''
+    });
+  };
+
+  const handleDeleteProject = async (proj) => {
+    const pid = proj._id || proj.id;
+    if (!window.confirm(`Are you sure you want to delete Master Project Profile "${proj.businessName}"?`)) return;
+
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${pid}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(`Master Project Profile "${proj.businessName}" deleted successfully!`);
+        if (editingProjectId === pid) handleCancelEdit();
+        fetchProjects();
+      } else {
+        setError(data.error || 'Failed to delete master project');
+      }
+    } catch (err) {
+      setError('Network error deleting master project');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Client-side duplicate project URL validation
-    const incomingNorm = normalizeUrl(form.projectUrl);
-    const duplicateProject = projects.find(p => normalizeUrl(p.projectUrl) === incomingNorm);
-    if (duplicateProject) {
-      setError(`A master project profile with URL "${form.projectUrl}" already exists ("${duplicateProject.businessName}")! Duplicate project profiles are not allowed.`);
-      return;
+    // Client-side duplicate project URL validation if creating new
+    if (!editingProjectId) {
+      const incomingNorm = normalizeUrl(form.projectUrl);
+      const duplicateProject = projects.find(p => normalizeUrl(p.projectUrl) === incomingNorm);
+      if (duplicateProject) {
+        setError(`A master project profile with URL "${form.projectUrl}" already exists ("${duplicateProject.businessName}")! Duplicate project profiles are not allowed.`);
+        return;
+      }
     }
 
+    const apiUrl = editingProjectId ? `${API_BASE_URL}/api/projects/${editingProjectId}` : `${API_BASE_URL}/api/projects`;
+    const apiMethod = editingProjectId ? 'PUT' : 'POST';
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/projects`, {
-        method: 'POST',
+      const res = await fetch(apiUrl, {
+        method: apiMethod,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : ''
@@ -177,13 +290,14 @@ export default function ProjectManager() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Project creation failed');
+        setError(data.error || (editingProjectId ? 'Project update failed' : 'Project creation failed'));
       } else {
-        setSuccess(`Master Project Profile "${form.businessName}" created successfully!`);
+        setSuccess(`Master Project Profile "${form.businessName}" ${editingProjectId ? 'updated' : 'created'} successfully!`);
+        if (editingProjectId) setEditingProjectId(null);
         fetchProjects();
       }
     } catch (err) {
-      setError('Network error creating project');
+      setError(`Network error ${editingProjectId ? 'updating' : 'creating'} project`);
     }
   };
 
@@ -196,12 +310,23 @@ export default function ProjectManager() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.8rem' }}>
           <div>
             <h2 style={{ fontSize: '1.35rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Building2 size={24} color="var(--accent-blue)" /> Create Master Project Profile
+              <Building2 size={24} color="var(--accent-blue)" /> {editingProjectId ? `Edit Master Project Profile: ${form.businessName}` : 'Create Master Project Profile'}
             </h2>
             <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Complete all project metadata, business listing details (NAP), social profiles & encrypted off-page credentials.
+              {editingProjectId ? 'Modify existing project metadata, business listing details (NAP), social links, and credentials.' : 'Complete all project metadata, business listing details (NAP), social profiles & encrypted off-page credentials.'}
             </p>
           </div>
+
+          {editingProjectId && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="search-input"
+              style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <X size={16} /> Cancel Editing
+            </button>
+          )}
         </div>
 
         {isRestrictedRole && (
@@ -802,24 +927,71 @@ export default function ProjectManager() {
                       </a>
                     </div>
 
-                    <button
-                      onClick={() => setExpandedProjectId(isExpanded ? null : pid)}
-                      style={{
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--border-card)',
-                        color: 'var(--text-main)',
-                        padding: '0.4rem 0.8rem',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        fontSize: '0.8rem'
-                      }}
-                    >
-                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      <span>{isExpanded ? 'Collapse Profile' : 'View Full Profile Spreadsheet'}</span>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      {!isRestrictedRole && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(proj)}
+                            style={{
+                              background: 'rgba(59, 130, 246, 0.15)',
+                              border: '1px solid #3b82f6',
+                              color: '#60a5fa',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.4rem',
+                              fontSize: '0.8rem',
+                              fontWeight: 600
+                            }}
+                          >
+                            <Pencil size={14} /> Edit Profile
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProject(proj)}
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.12)',
+                              border: '1px solid #ef4444',
+                              color: '#ef4444',
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.4rem',
+                              fontSize: '0.8rem',
+                              fontWeight: 600
+                            }}
+                          >
+                            <Trash2 size={14} /> Delete Profile
+                          </button>
+                        </>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setExpandedProjectId(isExpanded ? null : pid)}
+                        style={{
+                          background: 'var(--input-bg)',
+                          border: '1px solid var(--border-card)',
+                          color: 'var(--text-main)',
+                          padding: '0.4rem 0.8rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        <span>{isExpanded ? 'Collapse Profile' : 'View Full Profile'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Summary Bar */}

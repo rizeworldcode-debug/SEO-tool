@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { exportFinalBacklinksExcel } from '../utils/exportExcel';
 import {
   TrendingUp,
   Users,
@@ -18,7 +19,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  MoreVertical
+  MoreVertical,
+  Download
 } from 'lucide-react';
 
 export default function NexusDashboard({ backlinks = [], projects = [], user }) {
@@ -46,6 +48,27 @@ export default function NexusDashboard({ backlinks = [], projects = [], user }) 
       gap: '1.5rem'
     }}>
       
+      {/* Top Actions & Export Banner */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', border: '1px solid var(--border-card)', padding: '1rem 1.4rem', borderRadius: '14px', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Sparkles size={18} color="var(--accent-cyan)" /> Executive Backlink Intelligence
+          </h3>
+          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            Real-time campaign telemetry across {uniqueDomainsCount} unique root domains & {totalCount} total backlink submissions.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => exportFinalBacklinksExcel(backlinks)}
+          className="search-btn"
+          style={{ background: 'linear-gradient(135deg, var(--accent-green), #059669)', padding: '0.6rem 1.3rem', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <Download size={16} /> Export Final Main Domains (Excel)
+        </button>
+      </div>
+
       {/* Top 4 Real Data Metric Sparkline Cards Grid */}
       <div style={{
         display: 'grid',

@@ -89,4 +89,65 @@ router.patch('/:id/role', authenticateToken, requireRole('admin'), async (req, r
   }
 });
 
+// PUT /api/users/:id — Edit user details (Admin only)
+router.put('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { username, email, password, role } = req.body;
+    const allowedRoles = ['admin', 'team_leader', 'team_member'];
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (email && email.toLowerCase() !== targetUser.email) {
+      const existing = await User.findOne({ email: email.toLowerCase(), _id: { $ne: req.params.id } });
+      if (existing) {
+        return res.status(400).json({ error: 'Another user with this email already exists' });
+      }
+      targetUser.email = email.toLowerCase();
+    }
+
+    if (username) targetUser.username = username;
+    if (role && allowedRoles.includes(role)) targetUser.role = role;
+    if (password && password.trim() !== '') targetUser.password = password;
+
+    await targetUser.save();
+
+    res.json({
+      message: `User '${targetUser.username}' updated successfully`,
+      user: {
+        id: targetUser._id,
+        username: targetUser.username,
+        email: targetUser.email,
+        role: targetUser.role,
+        updatedAt: targetUser.updatedAt
+      }
+    });
+  } catch (err) {
+    console.error('Update user error:', err);
+    res.status(500).json({ error: 'Failed to update user account', details: err.message });
+  }
+});
+
+// DELETE /api/users/:id — Delete user account (Admin only)
+router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: 'You cannot delete your own active admin account!' });
+    }
+
+    const targetUser = await User.findByIdAndDelete(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'Target user not found' });
+    }
+
+    res.json({ message: `User '${targetUser.username}' account deleted successfully`, id: req.params.id });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ error: 'Failed to delete user account', details: err.message });
+  }
+});
+
 module.exports = router;
+

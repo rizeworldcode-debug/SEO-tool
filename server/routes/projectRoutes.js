@@ -5,6 +5,8 @@ const Project = require('../models/Project');
 const { authenticateToken, requireRole, sanitizeProjectResponse } = require('../utils/auth');
 const { encryptCredentials } = require('../utils/encryption');
 
+const mockProjects = [];
+
 function normalizeUrl(urlStr) {
   if (!urlStr) return '';
   try {

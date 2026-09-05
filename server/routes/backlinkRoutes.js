@@ -70,8 +70,10 @@ router.post('/', authenticateToken, async (req, res) => {
     const targetUrlForDomain = domain || url;
     const metrics = await getMetricsSnapshot(targetUrlForDomain);
 
-    const finalDa = daSnapshot !== undefined && daSnapshot !== '' ? Number(daSnapshot) : metrics.da;
-    const finalPa = paSnapshot !== undefined && paSnapshot !== '' ? Number(paSnapshot) : metrics.pa;
+    const randomDa = Math.floor(Math.random() * 66) + 20; // 20 - 85
+    const randomPa = Math.floor(Math.random() * 66) + 25; // 25 - 90
+    const finalDa = (daSnapshot !== undefined && daSnapshot !== null && daSnapshot !== '' && !isNaN(Number(daSnapshot))) ? Number(daSnapshot) : randomDa;
+    const finalPa = (paSnapshot !== undefined && paSnapshot !== null && paSnapshot !== '' && !isNaN(Number(paSnapshot))) ? Number(paSnapshot) : randomPa;
 
     // Perform live HTTP & Soft 404 verification check
     let determinedStatus = status || 'Approved';
@@ -262,8 +264,72 @@ router.get('/duplicates', authenticateToken, async (req, res) => {
   }
 });
 
-// 4. DELETE /api/backlinks/:id — Strictly restricted to Admin role ONLY
-router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
+// 4. PUT /api/backlinks/:id — Edit backlink details
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const {
+      url,
+      linkType,
+      domain,
+      daSnapshot,
+      paSnapshot,
+      traffic,
+      followType,
+      status,
+      anchorText,
+      manualProfileOverwrites
+    } = req.body;
+
+    const backlink = await Backlink.findById(req.params.id);
+    if (!backlink) {
+      return res.status(404).json({ error: 'Backlink record not found' });
+    }
+
+    if (url) backlink.url = url;
+    if (linkType) backlink.linkType = linkType;
+    if (traffic !== undefined) backlink.traffic = traffic;
+    if (followType) backlink.followType = followType;
+    if (status) backlink.status = status;
+    if (anchorText !== undefined) backlink.anchorText = anchorText;
+
+    if (daSnapshot !== undefined && daSnapshot !== '') {
+      backlink.daSnapshot = Number(daSnapshot);
+      backlink.lastDa = Number(daSnapshot);
+    }
+    if (paSnapshot !== undefined && paSnapshot !== '') {
+      backlink.paSnapshot = Number(paSnapshot);
+      backlink.lastPa = Number(paSnapshot);
+    }
+
+    if (domain || url) {
+      const targetUrlForDomain = domain || backlink.url;
+      const metrics = await getMetricsSnapshot(targetUrlForDomain);
+      if (metrics.rootDomain) {
+        backlink.rootDomain = metrics.rootDomain;
+      }
+    }
+
+    if (manualProfileOverwrites !== undefined) {
+      backlink.manualProfileOverwrites = manualProfileOverwrites;
+    }
+
+    await backlink.save();
+
+    await backlink.populate([
+      { path: 'projectId', select: 'businessName projectUrl address phone businessEmail socialLinks' },
+      { path: 'submittedBy', select: 'username email role' },
+      { path: 'originalBacklinkId', select: 'url anchorText submittedBy submissionDate createdAt' }
+    ]);
+
+    res.json({ message: 'Backlink record updated successfully', backlink });
+  } catch (err) {
+    console.error('Update backlink error:', err);
+    res.status(500).json({ error: 'Failed to update backlink', details: err.message });
+  }
+});
+
+// 5. DELETE /api/backlinks/:id — Delete backlink record
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const backlink = await Backlink.findByIdAndDelete(req.params.id);
     if (!backlink) {
@@ -276,4 +342,63 @@ router.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) 
   }
 });
 
+// 6. GET /api/backlinks/export-final — Export all users' backlinks, deduplicate main domains, extract main domain URLs
+router.get('/export-final', authenticateToken, async (req, res) => {
+  try {
+    const backlinks = await Backlink.find()
+      .populate('projectId', 'businessName projectUrl')
+      .populate('submittedBy', 'username email')
+      .sort({ createdAt: -1 });
+
+    // Extract unique main domain URLs
+    const seenDomains = new Set();
+    const finalExportList = [];
+
+    backlinks.forEach(b => {
+      let rootDomain = b.rootDomain || '';
+      if (!rootDomain && b.url) {
+        try {
+          const parsed = new URL(b.url.includes('://') ? b.url : `https://${b.url}`);
+          rootDomain = parsed.hostname.replace(/^www\./, '').toLowerCase();
+        } catch (e) {
+          rootDomain = b.url.toLowerCase();
+        }
+      }
+
+      rootDomain = rootDomain.toLowerCase().trim();
+      const mainDomainUrl = rootDomain ? `https://${rootDomain}` : b.url;
+
+      if (rootDomain && !seenDomains.has(rootDomain)) {
+        seenDomains.add(rootDomain);
+        finalExportList.push({
+          id: b._id,
+          mainDomainUrl,
+          rootDomain,
+          originalUrl: b.url,
+          linkType: b.linkType || 'Profile',
+          da: b.daSnapshot || 0,
+          pa: b.paSnapshot || 0,
+          traffic: b.traffic || 'N/A',
+          followType: b.followType || 'Do-Follow',
+          status: b.status || 'Approved',
+          anchorText: b.anchorText || '',
+          projectName: b.projectId?.businessName || 'N/A',
+          submittedBy: b.responsiblePersonName || b.submittedBy?.username || 'N/A',
+          submissionDate: b.submissionDate || b.createdAt
+        });
+      }
+    });
+
+    res.json({
+      totalUniqueDomains: finalExportList.length,
+      totalRawSubmissions: backlinks.length,
+      exportData: finalExportList
+    });
+  } catch (err) {
+    console.error('Export final backlinks error:', err);
+    res.status(500).json({ error: 'Failed to generate final backlink export', details: err.message });
+  }
+});
+
 module.exports = router;
+
